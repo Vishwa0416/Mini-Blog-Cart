@@ -5,17 +5,6 @@ include 'config.php';
 
 $user_id = $_SESSION['user_id'] ?? null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_post'])) {
-    $title = $conn->real_escape_string($_POST['title']);
-    $content = $conn->real_escape_string($_POST['content']);
-    $conn->query("INSERT INTO posts (user_id, title, content) VALUES ('$user_id', '$title', '$content')");
-}
-
-if (isset($_GET['delete_id']) && $user_id) {
-    $delete_id = $_GET['delete_id'];
-    $conn->query("DELETE FROM posts WHERE id='$delete_id' AND user_id='$user_id'");
-}
-
 echo '<div class="container mt-5">';
 echo '<h2>All Blog Posts</h2>';
 
@@ -32,18 +21,24 @@ $result = $conn->query("SELECT posts.*, users.name FROM posts JOIN users ON post
 echo '<div class="row">';
 while ($row = $result->fetch_assoc()) {
     $is_owner = ($user_id == $row['user_id']);
+    
     echo "<div class='col-md-6 mb-4'>
-            <div class='card' style='min-height: 350px;'> <!-- Adjusted height for buttons -->
+            <div class='card' style='min-height: 350px;'>
                 <div class='card-body'>
                     <h5 class='card-title'>{$row['title']}</h5>
                     <p class='card-text'>{$row['content']}</p>
                     <p class='text-muted'>By: {$row['name']} on {$row['created_at']}</p>";
+
     if ($is_owner) {
         echo "<a href='edit_post.php?id={$row['id']}' class='btn btn-warning btn-sm'>Edit</a>
-              <a href='?delete_id={$row['id']}' class='btn btn-danger btn-sm' onclick='return confirm(\'Are you sure?\');'>Delete</a>";
+              <a href='?delete_id={$row['id']}' class='btn btn-danger btn-sm' onclick='return confirm(\"Are you sure?\");'>Delete</a>";
+    } else {
+        echo "<p class='text-muted'>You are not the owner of this post.</p>";
     }
+
     echo "</div></div></div>";
 }
+
 echo '</div></div>';
 
 include 'includes/footer.php';

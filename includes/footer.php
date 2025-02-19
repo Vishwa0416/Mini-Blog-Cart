@@ -1,6 +1,18 @@
-<footer class="bg-dark text-white text-center py-3 mt-5 fixed-bottom" >
+<footer class="bg-dark text-white text-center py-3 mt-5">
     <p>&copy; 2025 Mini Blog & Shopping Cart. All rights reserved.</p>
 </footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    html, body {
+        height: 100%;
+    }
+
+    .content {
+        min-height: 100%;
+        padding-bottom: 50px;
+    }
+</style>
 </body>
 </html>

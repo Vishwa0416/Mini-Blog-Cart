@@ -38,13 +38,29 @@ if (isset($_GET['remove'])) {
     echo '<div class="alert alert-danger">Product removed from cart!</div>';
 }
 
+echo '<form method="get" action="" class="mb-4">
+        <div class="input-group">
+            <input type="text" class="form-control" name="search" placeholder="Search for a product" value="' . (isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '') . '">
+            <button class="btn btn-primary" type="submit">Search</button>
+        </div>
+      </form>';
+
+$search = isset($_GET['search']) ? $conn->real_escape_string($_GET['search']) : '';
+$sql = "SELECT * FROM products";
+if ($search) {
+    $sql .= " WHERE name LIKE '%$search%'";
+}
+
+$result = $conn->query($sql);
+
 echo '<h3>Product Listing</h3>';
-$result = $conn->query("SELECT * FROM products");
+
 if ($result->num_rows > 0) {
     echo '<div class="row">';
     while ($product = $result->fetch_assoc()) {
         echo "<div class='col-md-4'>
                 <div class='card mb-3'>
+                    <img src='{$product['image']}' class='card-img-top' alt='{$product['name']}' style='height: 400px; object-fit: cover;'>
                     <div class='card-body'>
                         <h5 class='card-title'>{$product['name']}</h5>
                         <p class='card-text'>Price: Rs. {$product['price']}</p>
@@ -59,11 +75,11 @@ if ($result->num_rows > 0) {
     }
     echo '</div>';
 } else {
-    echo '<p class="alert alert-info">No products available.</p>';
+    echo '<p class="alert alert-info">No products found.</p>';
 }
 
 $result = $conn->query("
-    SELECT products.id, products.name, products.price, cart.quantity 
+    SELECT products.id, products.name, products.price, products.image, cart.quantity 
     FROM cart 
     JOIN products ON cart.product_id = products.id 
     WHERE cart.user_id = $user_id
@@ -74,6 +90,7 @@ if ($result->num_rows > 0) {
     echo '<table class="table table-bordered">';
     echo '<thead class="table-dark">
             <tr>
+                <th>Image</th>
                 <th>Product</th>
                 <th>Price (LKR)</th>
                 <th>Quantity</th>
@@ -86,20 +103,21 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $item_total = $row['price'] * $row['quantity'];
         $grand_total += $item_total;
+
         echo "<tr>
+                <td><img src='{$row['image']}' alt='{$row['name']}' style='width: 80px; height: 80px; object-fit: cover;'></td>
                 <td>{$row['name']}</td>
                 <td>Rs. {$row['price']}</td>
                 <td>{$row['quantity']}</td>
                 <td>Rs. {$item_total}</td>
                 <td>
-                    <a href='?remove={$row['id']}' class='btn btn-danger btn-sm' 
-                       onclick=\"return confirm('Remove this item?')\">Remove</a>
+                    <a href='?remove={$row['id']}' class='btn btn-danger btn-sm' onclick=\"return confirm('Remove this item?')\">Remove</a>
                 </td>
               </tr>";
     }
 
     echo "<tr>
-            <td colspan='3' class='text-end'><strong>Grand Total:</strong></td>
+            <td colspan='4' class='text-end'><strong>Grand Total:</strong></td>
             <td><strong>Rs. {$grand_total}</strong></td>
             <td></td>
           </tr>";
